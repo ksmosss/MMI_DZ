@@ -1,0 +1,8 @@
+# TaskFlow development guidelines (adapted from the DZ2 approach)
+- Keep frontend code in React + TypeScript, with explicit Task types.
+- Preserve verified backend behavior; inspect OpenAPI before changing integration.
+- Do not introduce unsupported DTO fields or authentication screens.
+- Write component tests for validation, status changes, and error states.
+- Maintain responsive 375px and desktop views.
+- Run npm test and npm run build after changes.
+- Do not claim checks passed without execution logs.

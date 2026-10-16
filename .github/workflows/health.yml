@@ -1,0 +1,17 @@
+name: Production health check
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check public readiness endpoint
+        env:
+          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
+        run: |
+          test -n "$HEALTHCHECK_URL"
+          curl --fail --silent --show-error --max-time 15 --retry 2 "$HEALTHCHECK_URL"
