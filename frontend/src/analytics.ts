@@ -1,47 +1,50 @@
-type YmFunction = ((...args: unknown[]) => void) & {
-  a?: unknown[][];
-  l?: number;
-};
+const ID = "G-ZQ09Q8ZCHM";
+const KEY = "taskflow_analytics_consent";
 
 declare global {
   interface Window {
-    ym?: YmFunction;
+    dataLayer?: IArguments[];
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
-const id = Number(import.meta.env.VITE_METRIKA_ID || 0);
+export type AnalyticsConsent = "accepted" | "rejected" | null;
 
-export function trackEvent(name: string): void {
-  if (id > 0 && window.ym) {
-    window.ym(id, 'reachGoal', name);
-  }
+export function getAnalyticsConsent(): AnalyticsConsent {
+  const value = localStorage.getItem(KEY);
+  return value === "accepted" || value === "rejected" ? value : null;
 }
 
 export function initAnalytics(): void {
-  if (!Number.isInteger(id) || id < 1) return;
+  if (getAnalyticsConsent() !== "accepted") return;
+  if (window.gtag) return;
 
-  if (!window.ym) {
-    const queued = ((...args: unknown[]) => {
-      queued.a?.push(args);
-    }) as YmFunction;
+  window.dataLayer = window.dataLayer || [];
 
-    queued.a = [];
-    queued.l = Date.now();
-    window.ym = queued;
+  window.gtag = function () {
+    window.dataLayer!.push(arguments);
+  };
+
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${ID}`;
+  document.head.appendChild(script);
+
+  window.gtag("js", new Date());
+  window.gtag("config", ID, { send_page_view: true });
+}
+
+export function setAnalyticsConsent(allowed: boolean): void {
+  localStorage.setItem(KEY, allowed ? "accepted" : "rejected");
+
+  if (allowed) {
+    location.reload();
+  } else {
+    location.reload();
   }
+}
 
-  const src = 'https://mc.yandex.ru/metrika/tag.js';
-
-  if (!document.querySelector(`script[src="${src}"]`)) {
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = src;
-    document.head.appendChild(script);
-  }
-
-  window.ym?.(id, 'init', {
-    clickmap: true,
-    trackLinks: true,
-    accurateTrackBounce: true,
-  });
+export function trackEvent(name: string): void {
+  if (getAnalyticsConsent() !== "accepted") return;
+  window.gtag?.("event", name);
 }
