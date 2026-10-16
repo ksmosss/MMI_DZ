@@ -40,7 +40,12 @@ jobs:
       - run: npm run build
       - run: npm audit --audit-level=high
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: >-
+        ${{
+          vars.ENABLE_DEPLOY == 'true' &&
+          github.ref == 'refs/heads/main' &&
+          github.event_name == 'push'
+        }}
     needs: [backend, frontend]
     runs-on: ubuntu-latest
     environment: production
