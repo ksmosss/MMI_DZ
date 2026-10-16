@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>GA4 Test</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZQ09Q8ZCHM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-ZQ09Q8ZCHM', {debug_mode: true});
+  </script>
+</head>
+<body>
+  <h1>GA4 Test</h1>
+  <button onclick="gtag('event', 'taskflow_test', {debug_mode: true})">
+    Отправить событие
+  </button>
+</body>
+</html>
