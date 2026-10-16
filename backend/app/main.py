@@ -26,8 +26,23 @@ from sqlalchemy.pool import StaticPool
 
 class JsonFormatter(logging.Formatter):
     def format(self, record):
-        return json.dumps({'time': datetime.now(timezone.utc).isoformat(), 'level':record.levelname,
-            'logger':record.name, 'message':record.getMessage()}, ensure_ascii=False)
+        data = {
+            "time": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+
+        for key in (
+            "method",
+            "path",
+            "status_code",
+            "duration_ms",
+        ):
+            if hasattr(record, key):
+                data[key] = getattr(record, key)
+
+        return json.dumps(data, ensure_ascii=False)
 handler=logging.StreamHandler()
 handler.setFormatter(JsonFormatter())
 logging.basicConfig(level=os.getenv('LOG_LEVEL', 'INFO'), handlers=[handler], force=True)
@@ -84,6 +99,29 @@ class TaskOut(BaseModel):
     completed: bool
 
 app = FastAPI(title='TaskFlow API', version='6.0.0')
+@app.middleware("http")
+async def log_http_requests(request: Request, call_next):
+    start = time.perf_counter()
+    status_code = 500
+
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        return response
+    finally:
+        duration_ms = round(
+            (time.perf_counter() - start) * 1000, 2
+        )
+
+        logger.info(
+            "http_request",
+            extra={
+                "method": request.method,
+                "path": request.url.path,
+                "status_code": status_code,
+                "duration_ms": duration_ms,
+            },
+        )
 # Session cookie only holds a short-lived OAuth state; tokens never go into it.
 app.add_middleware(SessionMiddleware, secret_key=SECRET, same_site='lax', https_only=os.getenv('COOKIE_SECURE', 'false').lower()=='true')
 GOOGLE_ID=os.getenv('GOOGLE_CLIENT_ID', '')
