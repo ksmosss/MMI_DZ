@@ -1,5 +1,5 @@
-# TaskFlow — лабораторная 6
+# TaskFlow — готов к Vercel
 
-CI/CD, OAuth2 Google, Яндекс.Метрика, readiness, JSON-логи и security audit. См. [integration_documentation.md](integration_documentation.md), [security_audit.md](security_audit.md), [ai_workflow.md](ai_workflow.md).
+Пошаговый деплой: [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md).
 
-Без настроенных Google OAuth credentials / Metрика ID / production VPS внешние интеграции и deploy не будут работать.
+React/Vite: `frontend/`, FastAPI: `backend/`, Vercel Function: `api/index.py`.

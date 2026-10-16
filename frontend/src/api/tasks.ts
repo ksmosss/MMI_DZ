@@ -8,7 +8,7 @@ const DEMO: Task[] = [
 ];
 const sleep = () => new Promise<void>(r => setTimeout(r, 130));
 let tasks:Task[] = DEMO.map(t=>({...t})); let nextId=6;
-const apiBase=(import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/,'');
+const apiBase=(import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? '/api' : '')).replace(/\/$/,'');
 const updateMethod=(import.meta.env.VITE_API_UPDATE_METHOD ?? 'patch').toUpperCase();
 
 async function request<T>(path:string, init:RequestInit = {}):Promise<T>{

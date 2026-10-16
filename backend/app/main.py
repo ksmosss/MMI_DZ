@@ -48,6 +48,10 @@ handler.setFormatter(JsonFormatter())
 logging.basicConfig(level=os.getenv('LOG_LEVEL', 'INFO'), handlers=[handler], force=True)
 logger = logging.getLogger('taskflow')
 DB_URL = os.getenv('DATABASE_URL', 'sqlite:///./taskflow.db')
+if DB_URL.startswith('postgres://'):
+    DB_URL = 'postgresql+psycopg://' + DB_URL[len('postgres://'):]
+elif DB_URL.startswith('postgresql://'):
+    DB_URL = 'postgresql+psycopg://' + DB_URL[len('postgresql://'):]
 SECRET = os.getenv('JWT_SECRET', '')
 if not SECRET or len(SECRET) < 32:
     raise RuntimeError('JWT_SECRET must contain at least 32 characters')
