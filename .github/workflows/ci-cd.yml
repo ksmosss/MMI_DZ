@@ -1,11 +1,14 @@
 name: TaskFlow CI/CD
+
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   backend:
     runs-on: ubuntu-latest
@@ -22,6 +25,7 @@ jobs:
       - run: ruff check app tests --select E4,E7,E9,F --ignore F401
       - run: python -m pytest -q
       - run: pip-audit -r requirements.txt
+
   frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -39,14 +43,10 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm audit --audit-level=high
+
   deploy:
-      if: >-
-        ${{
-          vars.ENABLE_DEPLOY == 'true' &&
-          github.ref == 'refs/heads/main' &&
-          github.event_name == 'push'
-        }}
     needs: [backend, frontend]
+    if: ${{ vars.ENABLE_DEPLOY == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -63,5 +63,6 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
-          # Deployment target must have repository checked out and an existing .env
-          ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && git pull --ff-only origin main && docker compose up -d --build && docker compose exec -T api python -c 'import urllib.request; urllib.request.urlopen("http://localhost:8000/health/ready")'"
+          # Deployment target must have repository checked out and an existing .env.
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && git pull --ff-only origin main && docker compose up -d --build"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && docker compose exec -T api python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health/ready\")'"
