@@ -58,7 +58,11 @@ if not SECRET or len(SECRET) < 32:
 if DB_URL.startswith('sqlite'):
     engine = create_engine(DB_URL, connect_args={'check_same_thread': False}, poolclass=StaticPool if DB_URL.endswith(':memory:') else None)
 else:
-    engine = create_engine(DB_URL, pool_pre_ping=True)
+        engine = create_engine(
+        DB_URL,
+        pool_pre_ping=True,
+        connect_args={"prepare_threshold": None},
+    )
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 ph = PasswordHasher()
 bearer = HTTPBearer(auto_error=False)
